@@ -1,0 +1,7 @@
+{
+    "python.testing.pytestArgs": [
+        "rd_classification"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

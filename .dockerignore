@@ -1,0 +1,7 @@
+.env
+.idea/
+.vscode/
+*.pyc
+.env.example
+.gitignore
+.pre-commit-config.yaml

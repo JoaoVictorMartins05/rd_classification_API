@@ -1,0 +1,46 @@
+
+services:
+  app:
+    container_name: rd_classification_api
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./rd_classification:/app
+    environment:
+      - DB_HOST=rd_classification_db
+      - DB_NAME=rd_classification
+      - DB_USER=admin
+      - DB_PASSWORD=admin
+    command: >
+      sh -c "python manage.py migrate &&
+              python manage.py runserver 0.0.0.0:8000" 
+
+    depends_on:
+      - database
+    networks:
+      - rd_classification_network
+ 
+  database:
+    container_name: rd_classification_db
+    image: postgres:15
+    restart: "unless-stopped"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=rd_classification
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - rd_classification_network
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+
+networks:
+  rd_classification_network:
+    driver: bridge
