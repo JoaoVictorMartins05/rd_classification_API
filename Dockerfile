@@ -21,9 +21,21 @@ WORKDIR /app
 # Copie os arquivos de dependências para o diretório de trabalho
 COPY pyproject.toml /app/ 
 COPY poetry.lock /app/
+COPY best_model.h5 /app/
+COPY features.csv /app
 
 # Instale as dependências do projeto
 RUN poetry install
+
+# Instalando o tensorflow
+RUN pip install tensorflow
+
+
+# =========================== Instalar isso
+WORKDIR /app/pyradiomics-3.1.0
+RUN pip install .
+WORKDIR /app
+# ===========================
 
 # Remova o cache do Poetry
 RUN rm -rf $(poetry config cache-dir)

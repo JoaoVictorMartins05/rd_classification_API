@@ -15,6 +15,12 @@ djangorestframework-simplejwt = "^5.3.1"
 dj-database-url = "==2.1.0"
 django-environ = "==0.11.2"
 django = "^5.0.6"
+pillow = "^10.3.0"
+simpleitk = "^2.3.1"
+mahotas = "^1.4.15"
+pandas = "^2.2.2"
+scikit-learn = "^1.5.0"
+opencv-python = "^4.9.0.80"
 
 
 [build-system]

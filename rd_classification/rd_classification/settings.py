@@ -41,7 +41,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core',
 ]
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.TokenAuthentication',
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#     ],
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -76,15 +86,19 @@ WSGI_APPLICATION = 'rd_classification.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("DB_NAME"),
-        'HOST': os.environ.get("DB_HOST"),
-        'USER': os.environ.get("DB_USER"),
-        'PASSWORD': os.environ.get("DB_PASSWORD"),
+        'NAME': 'rd_classification',
+        'HOST': '127.0.0.1',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        # 'NAME': os.environ.get("DB_NAME"),
+        # 'HOST': os.environ.get("DB_HOST"),
+        # 'USER': os.environ.get("DB_USER"),
+        # 'PASSWORD': os.environ.get("DB_PASSWORD"),
     }
 }
 
