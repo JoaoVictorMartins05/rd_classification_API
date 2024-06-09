@@ -6,12 +6,16 @@ class IsAdmin(BasePermission):
 
 class IsMedico(BasePermission):
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.pessoa.is_medico
+        return request.user and request.user.pessoa.is_medico
 
 class IsSecretario(BasePermission):
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.pessoais_secretario
+        return request.user and request.user.pessoa.is_secretario
 
 class IsPaciente(BasePermission):
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.pessoa.is_paciente
+        return request.user and request.user.pessoa.is_paciente
+
+class CanDoExams(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and (request.user.pessoa.is_medico or request.user.is_staff)

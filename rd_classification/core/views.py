@@ -8,12 +8,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from classification.classification import executar
 
-from .permissions import IsAdmin, IsMedico
+from .permissions import CanDoExams, IsAdmin, IsMedico, IsSecretario
 from .models import User, Paciente, Medico, Secretario, Exame, Pessoa
 from .serializers import UserSerializer, PacienteSerializer, MedicoSerializer, SecretarioSerializer, ExameSerializer, PessoaSerializer
 from rest_framework import serializers
 import SimpleITK as sitk
-
+from rest_framework.exceptions import PermissionDenied
 
 class PacienteViewSet(viewsets.ModelViewSet):
     queryset = Paciente.objects.all()
@@ -27,9 +27,11 @@ class PacienteViewSet(viewsets.ModelViewSet):
         elif user.pessoa.is_paciente:
             return Paciente.objects.filter(pessoa=user.pessoa)
         elif user.pessoa.is_medico:
-            return Paciente.objects.filter(pessoa__in=Medico.objects.filter(pessoa__user=user).values('pessoa'))
+            return Paciente.objects.filter(pessoa__in=Exame.objects.filter(medico__pessoa__user=user).values('paciente__pessoa'))
+        elif user.pessoa.is_secretario:
+            return Paciente.objects.filter(pessoa__in=Exame.objects.filter(medico=user.pessoa.secretario.medico).values('paciente__pessoa'))
         else:
-            return Paciente.objects.none()
+            raise serializers.ValidationError("Você não tem permissão para realizar esta ação.")
 
     def perform_create(self, serializer):
         serializer.save()
@@ -46,8 +48,10 @@ class MedicoViewSet(viewsets.ModelViewSet):
             return Medico.objects.all()
         elif user.pessoa.is_medico:
             return Medico.objects.filter(pessoa__user=user)
+        elif user.pessoa.is_secretario:
+            return Medico.objects.filter(pessoa__user=user.pessoa.secretario.medico.pessoa.user)
         else:
-            return Medico.objects.none()
+            raise serializers.ValidationError("Você não tem permissão para realizar esta ação.")
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -68,9 +72,11 @@ class SecretarioViewSet(viewsets.ModelViewSet):
             return Secretario.objects.all()
         elif user.pessoa.is_secretario:
             return Secretario.objects.filter(pessoa__user=user)
+        elif user.pessoa.is_medico:
+            return Secretario.objects.filter(medico__pessoa__user=user)
         else:
-            return Secretario.objects.none()
-
+            raise PermissionDenied("Você não tem permissão para realizar esta ação.")
+    
     def perform_create(self, serializer):
         user = self.request.user
         if user.is_superuser or user.pessoa.is_medico:
@@ -80,7 +86,7 @@ class SecretarioViewSet(viewsets.ModelViewSet):
 
 
 class ExameViewSet(viewsets.ViewSet): 
-    permission_classes = [IsAuthenticated, IsMedico | IsAdmin]
+    permission_classes = [IsAuthenticated]
     serializer_class = ExameSerializer
 
     def list(self, request):
@@ -95,13 +101,13 @@ class ExameViewSet(viewsets.ViewSet):
         elif user.pessoa.is_medico:
             return Exame.objects.filter(medico__pessoa__user=user)
         elif user.pessoa.is_secretario:
-            return Exame.objects.filter(medico__pessoa__user=user.pessoa.medico.pessoa.user)
+            return Exame.objects.filter(medico__pessoa__user=user.pessoa.secretario.medico.pessoa.user)
         elif user.pessoa.is_paciente:
             return Exame.objects.filter(paciente__pessoa__user=user)
         else:
-            return Exame.objects.none()
+            raise serializers.ValidationError("Você não tem permissão para realizar esta ação.")
 
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['POST'], permission_classes=[CanDoExams])
     def classificar(self, request):
         
         serializer = self.serializer_class(data=request.data)
@@ -114,8 +120,16 @@ class ExameViewSet(viewsets.ViewSet):
         data_exame = serializer.validated_data.get('data_exame')
 
         # Buscar o médico e o paciente
-        medico = Medico.objects.get(pk=medico_id)
-        paciente = Paciente.objects.get(pk=paciente_id)
+        try:
+            medico = Medico.objects.get(pk=medico_id)
+            paciente = Paciente.objects.get(pk=paciente_id)
+        except Medico.DoesNotExist:
+            return Response({"error": "Médico não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Paciente.DoesNotExist:
+            return Response({"error": "Paciente não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao buscar médico ou paciente: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
         resultado = executar(imagem)
 
