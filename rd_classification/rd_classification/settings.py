@@ -27,13 +27,15 @@ SECRET_KEY = 'django-insecure-q@o_4ic)6z6_(soza-au&08vi7y(q9q*a502=y!j(@49(l*f-(
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Application definition
 
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',

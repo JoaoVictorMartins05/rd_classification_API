@@ -1,12 +1,14 @@
 # Ignore arquivos e pastas temporários
 temp/
 exames/
+staticfiles/
 
 # Ignore arquivos do Pytest
 .pytest_cache/
 pytest_cache/
 *.pyc
 __pycache__/
+/__pycache__/
 
 # Ignore arquivos do VS Code
 .vscode/

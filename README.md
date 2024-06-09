@@ -20,3 +20,31 @@ http://localhost:8000/
 # Vá até o terminal e rode o seguinte comando:
 
 docker-compose up
+
+
+
+### Sem Docker
+
+## Instalar Poetry
+
+## Poetry Shell
+
+## Poetry Install
+
+## pip install tensorflow
+
+## pip install 
+
+## cd ./pyradiomics-3.1.0
+
+## pip install .
+
+## cd ..
+
+## cd ./rd_classification
+
+## python manage.py collectstatic
+
+## python manage.py migrate
+
+## python manage.py runserver
